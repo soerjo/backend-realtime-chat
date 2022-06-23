@@ -1,6 +1,6 @@
 import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 import cors from "cors";
 import http from "http";
 
@@ -20,12 +20,50 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Express + Typescript Server");
 });
 
+type Users = {
+  username: string;
+  userId: string;
+  room: string;
+};
+
+const users: Users[] = [];
+
+const userJoin = (userName: string, userId: string, roomId: string) => {
+  const findIndex = users.findIndex(
+    user => user.username === userName || user.userId === userId
+  );
+  if (findIndex > 0) {
+    users[findIndex] = {
+      ...users[findIndex],
+      room: roomId,
+      username: userName,
+    };
+  } else {
+    users.push({ username: userName, userId: userId, room: roomId });
+  }
+};
+
+const joinRoom = (socket: Socket, roomid: string, userId: string) => {
+  const userRoom = users.find(user => user?.userId !== userId);
+  if (userRoom && userRoom.room !== roomid) {
+    socket.to(userRoom.room).emit("receive_message", {
+      author: userRoom.username,
+      message: "leave the room",
+      time: new Date().getTime(),
+    });
+    socket.leave(userRoom.room);
+  }
+  socket.join(roomid);
+};
+
 io.on("connection", socket => {
   console.log("user : ", socket.id);
 
-  socket.on("join_room", data => {
-    socket.join(data);
-    console.log("isi data: ", data);
+  socket.on("join_room", ({ userName, roomId }) => {
+    userJoin(userName, socket.id, roomId);
+    joinRoom(socket, roomId, socket.id);
+
+    console.log(users);
   });
 
   socket.on("send_message", data => {
