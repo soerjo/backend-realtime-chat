@@ -10,12 +10,7 @@ console.log(originUrl);
 const port = process.env.PORT;
 const app: Express = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: originUrl,
-    methods: ["GET", "POST"],
-  },
-});
+const io = new Server(server);
 
 app.use(cors());
 app.get("/", (req: Request, res: Response) => {
