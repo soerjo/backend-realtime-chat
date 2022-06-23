@@ -6,6 +6,7 @@ import http from "http";
 
 dotenv.config();
 const originUrl = process.env.ORIGIN || "http://localhost:3000";
+console.log(originUrl);
 const port = process.env.PORT;
 const app: Express = express();
 const server = http.createServer(app);
