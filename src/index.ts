@@ -5,12 +5,17 @@ import cors from "cors";
 import http from "http";
 
 dotenv.config();
-const originUrl = process.env.ORIGIN || "http://localhost:3000";
-console.log(originUrl);
 const port = process.env.PORT;
-const app: Express = express();
+const URL = process.env.URL || "*";
+console.log("url cors origins: ", URL);
+const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: URL,
+    credentials: true,
+  },
+});
 
 app.use(cors());
 app.get("/", (req: Request, res: Response) => {
